@@ -2,5 +2,6 @@ require "wired/version"
 require "wired/engine"
 
 module Wired
-  # Your code goes here...
+  require "wired/manager"
+  require "wired/base_component"
 end

@@ -1,14 +1,14 @@
 # Wired
-Short description and motivation.
+TODO: Short description and motivation.
 
 ## Usage
-How to use my plugin.
+TODO: How to use my plugin.
 
 ## Installation
 Add this line to your application's Gemfile:
 
 ```ruby
-gem "wired"
+gem "wired", git: "git@github.com:luca-bassi/wired.git"
 ```
 
 And then execute:
@@ -16,13 +16,36 @@ And then execute:
 $ bundle
 ```
 
-Or install it yourself as:
+Run the installer:
 ```bash
-$ gem install wired
+$ rails g wired:install
 ```
 
-## Contributing
-Contribution directions go here.
+Finish by:
+1. copy into your `config/application.rb`:
+```ruby
+config.autoload_paths << Rails.root.join('/app/components')
+```
+2. import the javascript part of the gem in your main js file:
+```js
+import 'wired'
+```
+3. source the update component route in `config/routes.rb`:
+```ruby
+mount Wired::Engine, at: '/wired'
+```
 
-## License
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+You should remove **all** your Alpinejs imports and dependencies (from `package.json` or your main js files), wired ships with everything by default and it may lead to conflicts.
+
+## TODOS
+* view partials without `local_assigns`
+* view variables with @
+* ~~handle nested components~~
+* ~~preserve alpine~~
+* ~~model syntacjson (attr.subattr[key])~~
+* ~~custom mount method for component~~
+* directive modifiers like alpine
+* ~~dispatch event component->view~~
+* ~~redirect~~
+
+and all the `TODO` you find in the source

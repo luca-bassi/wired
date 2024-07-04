@@ -1,0 +1,14 @@
+<div class="flex flex-col gap-1">
+  <div class="flex gap-4 items-center justify-between">
+    <strong><%= total %></strong>
+    <button class="button-sm bg-primary text-on-primary" wired:click="add">+</button>
+  </div>
+
+  <div class="p-2 rounded-xl bg-primary-container text-on-primary-container">
+    <h5 class="font-bold">Alpine inside ©</h5>
+    <div x-data="{isOn: false}" class="flex justify-between items-center" key="alpineKey">
+      <div>Value: <span x-text="isOn"></span></div>
+      <button class="button bg-secondary text-on-secondary" x-on:click="isOn = !isOn">switch</button>
+    </div>
+  </div>
+</div>
