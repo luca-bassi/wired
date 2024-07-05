@@ -1,3 +1,3 @@
-Wired::Engine.routes.draw do
-  post ':name/update', to: 'updates#update'
+Wired::Engine.routes do
+  post '/wired/:name/update', to: 'updates#update'
 end
