@@ -7,11 +7,11 @@ module Wired
     attr_accessor :__redirect_to
 
     def initialize(args)
-      mount
-
       args.each do |k,v|
         instance_variable_set("@#{k}", v) # uso @ dentro componente
       end
+
+      mount
 
       self.__event_queue = []
     end
