@@ -11,8 +11,6 @@ module Wired
         instance_variable_set("@#{k}", v) # uso @ dentro componente
       end
 
-      mount
-
       self.__event_queue = []
     end
 

@@ -7,6 +7,8 @@ module Wired
       component.setId(id)
       component.setViewContext(vc)
 
+      component.mount
+
       html = component.render_layout
 
       initialState = {
