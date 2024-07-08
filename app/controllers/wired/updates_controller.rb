@@ -3,23 +3,25 @@ module Wired
 
     def update
       state = request.parameters[:state].deep_symbolize_keys
-      update = request.parameters[:update]
+      updates = request.parameters[:updates]
 
       component = Wired::Manager.fromState(state)
       component.setViewContext(self.view_context)
 
-      if update[:type] == 'syncInput'
-        input = update[:data]
-        model = input[:model]
-        value = input[:value]
-
-        component.updateModel(model, value)
-      elsif update[:type] == 'callMethod'
-        call = update[:data]
-        callMethod = call[:method]
-        callArgs = call[:params] || []
-    
-        component.send(callMethod, *callArgs)
+      updates.each do |update|
+        if update[:type] == 'syncInput'
+          input = update[:data]
+          model = input[:model]
+          value = input[:value]
+  
+          component.updateModel(model, value)
+        elsif update[:type] == 'callMethod'
+          call = update[:data]
+          callMethod = call[:method]
+          callArgs = call[:params] || []
+      
+          component.send(callMethod, *callArgs)
+        end
       end
 
       html = component.render_layout

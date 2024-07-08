@@ -12,6 +12,19 @@ export default {
     return document.head.querySelector('meta[name="csrf-token"]').content
   },
 
+  debounce(func, wait){
+    var timeout
+    return function () {
+        var context = this, args = arguments
+        var later = function () {
+            timeout = null
+            func.apply(context, args)
+        }
+        clearTimeout(timeout)
+        timeout = setTimeout(later, wait)
+    }
+  },
+
   init(el, component){
     const acceptedEvents = ['click', 'input', 'change']
 

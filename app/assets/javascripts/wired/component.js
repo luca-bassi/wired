@@ -7,6 +7,8 @@ export default class Component {
     el.domNode().__wired = this
     this.id = el.getWiredAttribute("id")
     this.state = JSON.parse(this.extractState())
+    this.actionQueue = []
+    this.isUpdating = false
     // useful attrs
     this.name = this.state.refs.name
 
@@ -26,7 +28,23 @@ export default class Component {
     )
   }
 
-  requestUpdate(payload){
+  requestUpdate(action){
+    this.actionQueue.push(action)
+    // 5ms debounce for same-time request (eg. model + input)
+    nodeUtils.debounce(this.fireUpdate, 5).apply(this)
+  }
+
+  fireUpdate(){
+    if(this.isUpdating) return
+    this.isUpdating = true
+
+    this.sendUpdates()
+
+    this.actionQueue = []
+  }
+
+  sendUpdates(){
+    const payload = this.actionQueue
     console.log('updating', payload, this)
     fetch(`/wired/${this.name}/update`, {
       method: 'POST',
@@ -36,7 +54,7 @@ export default class Component {
         'X-CSRF-TOKEN': nodeUtils.csrfToken(),
       },
       body: JSON.stringify({
-        update: payload,
+        updates: payload,
         state: this.state
       })
     }).then((r) => r.json())
@@ -44,7 +62,13 @@ export default class Component {
       const state = response.state
       const thisComponent = store.getComponent(state.refs.id)
       thisComponent.handleResponse(response)
-      console.log('updated', this, thisComponent.state)
+
+      // This bit of logic ensures that if actions were queued while a request was
+      // out to the server, they are sent when the request comes back.
+      // (i trust)
+      if (this.actionQueue.length > 0) {
+        this.fireUpdate()
+      }
     }).catch((err) => {
       console.log('UPDATE ERROR', err);
     })
@@ -60,6 +84,8 @@ export default class Component {
 
     this.el.morphHTML(this, response.html)
 
+    this.isUpdating = false
+
     /* https://github.com/livewire/livewire/blob/1.x/js/component/index.js#L188 */
     if(response.eventQueue.length){
       response.eventQueue.forEach(event => {
@@ -72,6 +98,8 @@ export default class Component {
         this.el.domNode().dispatchEvent(e)
       })
     }
+
+    console.log('updated', this)
   }
 
   walk(callbackDefault, callbackForNewComponent) {
