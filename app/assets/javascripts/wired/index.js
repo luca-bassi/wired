@@ -39,7 +39,8 @@ class Wired {
 
       if (!component) return
 
-      nodeUtils.init(el, component)
+      const element = new DOMItem(el)
+      nodeUtils.init(element, component)
 
       // non ho idea di cosa faccia, spero quello che faccio sopra nell'init
       // attributes.forEach(attribute => {
