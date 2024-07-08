@@ -45,10 +45,16 @@ export default {
         ['checkbox', 'radio'].includes(el.domNode().type)
           ? 'change'
           : 'input'
-      el.addEventListener(event, function(e){
-        const el = new DOMItem(e.target)
+
+      // remove previous instance
+      if(el.domNode().directives['model']){
+        el.removeEventListener(event, el.domNode().directives['model'])
+        delete el.domNode().directives['model']
+      }
+      el.addEventListener(event, el.domNode().directives['model'] = function(e){
         const model = el.getWiredAttribute('model')
         const value = el.inputValue(component)
+
         component.requestUpdate({type: 'syncInput', data: {model, value}});
       })
     }
@@ -56,7 +62,12 @@ export default {
     // check generic events
     acceptedEvents.forEach(function(ename){
       if(el.hasWiredAttribute(ename)){
-        el.addEventListener(ename, function(e){
+        // remove previous instance
+        if(el.domNode().directives[ename]){
+          el.removeEventListener(ename, el.domNode().directives[ename])
+          delete el.domNode().directives[ename]
+        }
+        el.addEventListener(ename, el.domNode().directives[ename] = function(e){
           let action = el.getWiredAttribute(ename);
           const { method, params } = wired.parseOutMethodAndParams(action)
 

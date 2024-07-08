@@ -39,16 +39,18 @@ class Wired {
 
       if (!component) return
 
-      attributes.forEach(attribute => {
-        if (!attribute.name.match(new RegExp('wired:'))) return;
+      nodeUtils.init(el, component)
 
-        // non ho idea di cosa faccia
-        // let directive = extractDirective(el, attribute.name)
+      // non ho idea di cosa faccia, spero quello che faccio sopra nell'init
+      // attributes.forEach(attribute => {
+      //   if (!attribute.name.match(new RegExp('wired:'))) return;
 
-        // trigger('directive.init', { el, component, directive, cleanup: (callback) => {
-        //   Alpine.onAttributeRemoved(el, directive.raw, callback)
-        // } })
-      })
+      //   let directive = extractDirective(el, attribute.name)
+
+      //   trigger('directive.init', { el, component, directive, cleanup: (callback) => {
+      //     Alpine.onAttributeRemoved(el, directive.raw, callback)
+      //   } })
+      // })
     })
 
     Alpine.interceptInit(
@@ -67,21 +69,25 @@ class Wired {
           // })
         }
 
-        // let component = store.closestComponent(el)
+        let component = store.closestComponent(el)
 
-        // if (component) {
-        //   trigger('element.init', { el, component })
+        if (component) {
+          const element = new DOMItem(el)
+          nodeUtils.init(element, component)
 
-        //   let directives = Array.from(el.getAttributeNames())
-        //       .filter(name => matchesForLivewireDirective(name))
-        //       .map(name => extractDirective(el, name))
+          // non ho idea di cosa faccia, spero quello che faccio sopra nell'init
+          // trigger('element.init', { el, component })
 
-        //   directives.forEach(directive => {
-        //     trigger('directive.init', { el, component, directive, cleanup: (callback) => {
-        //       Alpine.onAttributeRemoved(el, directive.raw, callback)
-        //     } })
-        //   })
-        // }
+          // let directives = Array.from(el.getAttributeNames())
+          //     .filter(name => matchesForLivewireDirective(name))
+          //     .map(name => extractDirective(el, name))
+
+          // directives.forEach(directive => {
+          //   trigger('directive.init', { el, component, directive, cleanup: (callback) => {
+          //     Alpine.onAttributeRemoved(el, directive.raw, callback)
+          //   } })
+          // })
+        }
       })
     )
 

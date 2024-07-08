@@ -3,6 +3,7 @@ import store from "./store"
 export default class DOMItem {
   constructor(el){
     this.el = el
+    this.el.directives ||= {} // name: func
   }
 
   domNode(){
@@ -35,6 +36,10 @@ export default class DOMItem {
 
   addEventListener() {
     return this.el.addEventListener(...arguments)
+  }
+
+  removeEventListener() {
+    return this.el.removeEventListener(...arguments)
   }
 
   /* preso paro paro da lw1 */
