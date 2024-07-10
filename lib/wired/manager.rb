@@ -1,11 +1,10 @@
 module Wired
   class Manager
-    def self.mount(vc, name, args={})
-      component = build(name, args)
+    def self.mount(context, name, args={})
+      component = build(context, name, args)
 
       id = SecureRandom.hex
       component.setId(id)
-      component.setViewContext(vc)
 
       component.mount
 
@@ -22,11 +21,11 @@ module Wired
       injectWiredIntoHtml(html, initialState)
     end
 
-    def self.fromState(state)
+    def self.fromState(context, state)
       name = state[:refs][:name]
       data = state[:data]
 
-      component = build(name, data)
+      component = build(context, name, data)
       component.setId(state[:refs][:id])
 
       return component
@@ -38,12 +37,12 @@ module Wired
 
     private
 
-    def self.build(name, args)
+    def self.build(context, name, args)
       className = "#{name.camelcase}Component"
       componentClass = className.safe_constantize
       raise "component #{name} not found" unless componentClass
 
-      return componentClass.new(args)
+      return componentClass.new(context, args)
     end
 
     def self.injectWiredIntoHtml(html, initialState)

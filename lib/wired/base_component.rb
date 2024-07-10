@@ -1,17 +1,30 @@
 module Wired
   class BaseComponent < ActionView::Base
-    attr_accessor :__id
-    attr_accessor :__original_view_context
+    include Rails.application.routes.url_helpers
+    def default_url_options
+      Rails.application.config.action_mailer.default_url_options
+    end
 
+    attr_accessor :__id
     attr_accessor :__event_queue
     attr_accessor :__redirect_to
 
-    def initialize(args)
+    def initialize(context, args)
       args.each do |k,v|
         instance_variable_set("@#{k}", v) # uso @ dentro componente
       end
 
       self.__event_queue = []
+
+      super(context.lookup_context, state, nil)
+    end
+
+    def compiled_method_container
+      self.class
+    end
+
+    def view(layout, locals={})
+      view_renderer.render(self, { template: layout, locals: locals })
     end
 
     ### utility stuff
@@ -20,14 +33,8 @@ module Wired
       self.__id = id
     end
 
-    def state_variables
-      instance_variables - reserved_vars
-    end
-
     def state
-      # devo passarli alla vista/js senza @
-      # todo farlo in modo più carino
-      state_variables.map{|v| [v[1..-1], instance_variable_get(v)]}.to_h.symbolize_keys
+      instance_values.reject{|k,v| k.in?(reserved_vars) }
     end
 
     def mount
@@ -74,21 +81,37 @@ module Wired
       instance_variable_set(:"@#{parts[0]}", newVal)
     end
 
-    ### rendering stuff
-
-    def setViewContext(vc)
-      self.__original_view_context = vc
-    end
-
-    def render_in(layout, locals={})
-      locals = state.merge(locals)
-      __original_view_context.render(layout, locals)
-    end
-
     private
 
     def reserved_vars
-      [:@__id, :@__original_view_context, :@__event_queue, :@__redirect_to]
+      %w[
+        _config
+        lookup_context
+        view_renderer
+        current_template
+        _assigns
+        _controller
+        _request
+        _default_form_builder
+        view_flow
+        output_buffer
+        virtual_path
+        __id
+        __event_queue
+        __redirect_to
+      ]
     end
   end
+
+  # always compile template views before render
+  # this because we reinitialize components to update their state
+  # and that makes the already compiled view method not present for the class
+  # kinda ugly maybe but it works for now
+  module AlwaysCompile
+    def compile!(_view)
+      @compiled = false if Rails.env.development?
+      super
+    end
+  end
+  ActionView::Template.prepend(AlwaysCompile)
 end

@@ -6,10 +6,10 @@ module Wired
       className = name.camelize
       lowerName = name.underscore
       copy_file "ruby.rb.tt", "app/components/#{lowerName}_component.rb"
-      copy_file "html.html.erb", "app/views/components/_#{lowerName}.html.erb"
+      copy_file "html.html.erb", "app/views/components/#{lowerName}.html.erb"
 
       ["app/components/#{lowerName}_component.rb",
-        "app/views/components/_#{lowerName}.html.erb"
+        "app/views/components/#{lowerName}.html.erb"
       ].each do |f|
         gsub_file(f, '%{name}', className)
         gsub_file(f, '%{lower}', lowerName)
