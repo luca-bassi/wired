@@ -1,6 +1,7 @@
 import store from './store'
 import nodeUtils from './nodeUtils';
 import DOMItem from './domItem';
+import { generateWiredObject } from './$wired';
 
 export default class Component {
   constructor(el){
@@ -11,6 +12,10 @@ export default class Component {
     this.isUpdating = false
     // useful attrs
     this.name = this.state.refs.name
+    // wired
+    this.liveState = JSON.parse(JSON.stringify(this.state.data))
+    this.reactive = Alpine.reactive(this.liveState)
+    this.$wired = generateWiredObject(this, this.reactive)
 
     this.init();
   }
@@ -76,6 +81,11 @@ export default class Component {
 
   handleResponse(response){
     this.state = response.state
+    // update alpine live state
+    let newData = JSON.parse(JSON.stringify(this.state.data))
+    Object.entries(this.liveState).forEach(([k, v]) => {
+      this.reactive[k] = newData[k]
+    })
 
     if(response.redirectTo){
       window.location.href = response.redirectTo

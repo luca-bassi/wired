@@ -26,7 +26,7 @@ export default {
   },
 
   init(el, component){
-    const acceptedEvents = ['click', 'input', 'change']
+    const acceptedEvents = ['click', 'input', 'change', 'submit']
 
     // model behavior
     if(el.hasWiredAttribute('model')){

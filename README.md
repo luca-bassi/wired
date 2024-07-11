@@ -10,16 +10,13 @@ You can create a new component with
 ```bash
 $ rails g wired:new CamelCaseName
 ```
-This will create a rails component `CamelCaseNameComponent` in `app/components/camel_case_name_component.rb`and a view file in `app/views/components/_camel_case_name.html.erb`.
+This will create a rails component `CamelCaseNameComponent` in `app/components/camel_case_name_component.rb`and a view file in `app/views/components/camel_case_name.html.erb`.
 
 To render your component in a page simply do
 ```html
 <%== Wired::Manager.mount(self, 'CamelCaseName', *your_arguments={}) %>
 ```
-You can treat the view file like a normal rails view (because it is), also you'll be able to use your arguments as instance variables inside your component.rb
-
-With the current implementation, while you have to reference these as instance variables to use them in the rb, you have to remove the @ and treat them as locals inside your view file (`@var` becomes `var` inside the `views/components/_my_component.html.erb`)  
-I dont like this either, but it's a wip.
+You can treat the view file like a normal rails view, with the instance variables being the ones in the component instance.
 
 ### 1. Mount
 To initialize variables you can use the mount method inside the component file:
@@ -33,7 +30,7 @@ class FormComponent < Wired::BaseComponent
   end
 
   def render_layout
-    render_in('components/form')
+    view('components/form')
   end
 end
 ```
@@ -56,9 +53,9 @@ end
 ```
 
 ### 2. Render
-The method `render_layout` needs to be present and needs to contain the instruction `render_in(view)` to know which view file to render.
+The method `render_layout` needs to be present and needs to contain the instruction `view(path)` to know which view file to render.
 
-This method is run every time your component's state updates or one of its function gets called. You're free to do any elboration you might need before the `render_in` instruction, as well as to provide additional parameters to pass to your view (as locals):
+This method is run every time your component's state updates or one of its function gets called. You're free to do any elboration you might need before the `view` instruction, as well as to provide additional parameters to pass to your view (as locals):
 ``` rb
 # app/components/example_component.rb
 
@@ -68,7 +65,7 @@ def render_layout
   items = User.all
   items = items.where("email ILIKE ?", "%#{@search}%") if @search.present?
 
-  render_in('components/example', items: items)
+  view('components/example', items: items)
 end
 ```
 
@@ -102,6 +99,7 @@ At this moment the only supported triggering actions are:
 - input
 - change
 - click
+- submit
 
 For any of these you can attach the attribute `wired:action` to an html element to call a component function:
 ```html
@@ -186,8 +184,50 @@ A few notes:
 1. Only use this if the child **needs** wired functionalities, most times a normal rails partial will be sufficient
 2. Currently there is no parent-children communication, they live independently to one another
 
-### 8. Alpine
-Wired, much like livewire, ships with alpinejs and all its plugins already enabled and it's designed to work seamlessly with it
+### 8. Alpine / $wired
+Wired, much like livewire, ships with alpinejs and all its plugins already enabled and it's designed to work seamlessly with it.
+
+This means that you can effectively use alpine's functionalities to trigger and interact with the backend component, using the magic `$wired`. A simple example would be the following:
+
+```ruby
+# app/components/counter_component.rb
+class CounterComponent < Wired::BaseComponent
+
+  def mount
+    @total = 0
+  end
+
+  def add
+    @total += 1
+  end
+
+  def set_count(n)
+    @total = n
+  end
+
+  def render_layout
+    view('components/counter')
+  end
+end
+```
+```html
+<!-- app/views/components/counter.html.erb -->
+<div>
+  <div>
+    <strong><%= @total %></strong>
+    <button wired:click="add">+</button>
+  </div>
+
+  <div x-data>
+    <strong x-text="$wired.total"></strong>
+    <button x-on:click="$wired.set_count(69)">:)</button>
+  </div>
+</div>
+```
+Pressing on the "+" button updates the component state, increasing `total` by 1.  This reflects on the internal $wired object which is displayed with `x-text`.  
+Therefore pressing the button updates both the erb interpolation AND the x-text.  
+Similarly for the "funny" button: the component state updates through the `set_count` function triggered by the `x-on:click`, setting both the erb interpolation AND the x-text once again. 
+Pretty nice.
 
 ## Installation
 Add this line to your application's Gemfile:
@@ -223,8 +263,8 @@ mount Wired::Engine, at: '/'
 You should remove **all** your Alpinejs imports and dependencies (from `package.json` or your main js files), wired ships with everything by default and it may lead to conflicts.
 
 ## TODOS
-* view partials without `local_assigns`
-* view variables with @
+* ~~view partials without `local_assigns`~~
+* ~~view variables with @~~
 * ~~handle nested components~~
 * ~~preserve alpine~~
 * ~~model syntacjson (attr.subattr[key])~~
@@ -232,7 +272,8 @@ You should remove **all** your Alpinejs imports and dependencies (from `package.
 * directive modifiers like alpine
 * ~~dispatch event component->view~~
 * ~~redirect~~
-* entangle / $wired
+* ~~$wired~~
+* entangle
 * parent-children communication
 
 and all the `TODO` you find in the source

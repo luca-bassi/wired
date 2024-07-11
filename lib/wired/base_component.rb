@@ -93,6 +93,7 @@ module Wired
         _controller
         _request
         _default_form_builder
+        _routes
         view_flow
         output_buffer
         virtual_path
