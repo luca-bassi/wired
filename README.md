@@ -229,6 +229,24 @@ Therefore pressing the button updates both the erb interpolation AND the x-text.
 Similarly for the "funny" button: the component state updates through the `set_count` function triggered by the `x-on:click`, setting both the erb interpolation AND the x-text once again. 
 Pretty nice.
 
+But what if i want alpine variables and functions to reflect into the backend state? Here comes `entangle`:
+```html
+<div>
+  <div>
+    <strong><%= @total %></strong>
+    <button wired:click="add">+</button>
+  </div>
+
+  <div>
+    <div x-data="{value: $wired.entangle('total') }">
+      <strong x-text="value"></strong>
+      <button x-on:click="value = 69">:)</button>
+    </div>
+  </div>
+</div>
+```
+The behavior of this snippet is exactly the same as the previous, with the exception that the component state is directly updated by alpine, not by calling backend functions.  
+
 ## Installation
 Add this line to your application's Gemfile:
 
@@ -273,7 +291,7 @@ You should remove **all** your Alpinejs imports and dependencies (from `package.
 * ~~dispatch event component->view~~
 * ~~redirect~~
 * ~~$wired~~
-* entangle
+* ~~entangle~~
 * parent-children communication
 
 and all the `TODO` you find in the source
