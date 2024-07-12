@@ -1,9 +1,9 @@
 module Wired
   class BaseComponent < ActionView::Base
-    include Rails.application.routes.url_helpers
-    def default_url_options
-      Rails.application.config.action_mailer.default_url_options
-    end
+    # include Rails.application.routes.url_helpers
+    # def default_url_options
+    #   Rails.application.config.action_mailer.default_url_options
+    # end
 
     attr_accessor :__id
     attr_accessor :__event_queue
