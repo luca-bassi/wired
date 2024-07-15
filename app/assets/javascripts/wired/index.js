@@ -93,7 +93,6 @@ class Wired {
     )
 
     nodeUtils.rootElementsWithNoParents().forEach(el => {
-      console.log(el);
       this.components.addComponent(new Component(el))
     })
 

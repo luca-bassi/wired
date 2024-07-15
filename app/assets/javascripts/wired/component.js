@@ -17,7 +17,9 @@ export default class Component {
     this.reactive = Alpine.reactive(this.liveState)
     this.$wired = generateWiredObject(this, this.reactive)
 
-    this.init();
+    this.init()
+
+    console.log(this)
   }
 
   extractState(){
