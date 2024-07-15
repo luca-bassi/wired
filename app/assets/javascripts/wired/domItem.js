@@ -22,6 +22,10 @@ export default class DOMItem {
     return this.el.hasAttribute('wired:id')
   }
 
+  isFocused() {
+    return this.el === document.activeElement
+  }
+
   hasWiredAttribute(attribute) {
     return this.el.hasAttribute(`wired:${attribute}`)
   }
@@ -121,40 +125,6 @@ export default class DOMItem {
 
     Array.from(this.el.options).forEach(option => {
       option.selected = arrayWrappedValue.includes(option.value)
-    })
-  }
-
-  /* https://github.com/livewire/livewire/blob/main/js/morph.js */
-  /* https://github.com/livewire/livewire/blob/1.x/js/component/index.js#L272 */
-  morphHTML(component, html){
-    let wrapperTag = this.el.parentElement
-        // If the root element is a "tr", we need the wrapper to be a "table"...
-        ? this.el.parentElement.tagName.toLowerCase()
-        : 'div'
-    let wrapper = document.createElement(wrapperTag) // placeholder for content
-    wrapper.innerHTML = html
-
-    let parentComponent = store.closestComponent(this.el.parentElement)
-    parentComponent && (wrapper.__wired = parentComponent)
-
-    let to = wrapper.firstElementChild
-    to.__wired = component
-
-    Alpine.morph(this.el, to, {
-      updating: (el, toEl, childrenOnly, skip) => {
-        if (typeof el.hasAttribute !== 'function') return
-
-        // Children will update themselves.
-        if (el.hasAttribute('wired:id') && el.getAttribute('wired:id') !== component.id) return skip()
-
-        if (el.hasAttribute('wired:id')){
-          toEl.__wired = component
-          toEl.setAttribute('wired:id', component.id)
-        }
-        // if(Alpine.$data(el)){
-        //   window.Alpine.cloneNode(el, toEl) // should clone x-data
-        // }
-      }
     })
   }
 }

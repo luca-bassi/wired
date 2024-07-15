@@ -92,7 +92,9 @@ export default class Component {
       return
     }
 
-    this.el.morphHTML(this, response.html)
+    this.morphHTML(response.html)
+
+    this.refreshDataBoundElements()
 
     this.isUpdating = false
 
@@ -132,11 +134,9 @@ export default class Component {
     })
   }
 
-  /* https://github.com/livewire/livewire/blob/1.x/js/component/index.js#L84 */
   get(name) {
-    // The .split() stuff is to support dot-notation.
-    return name
-      .split('.')
+    let segments = name.split('[').map((k) => k.replace(/['"\]]/g, '').split('.')).flat()
+    return segments
       .reduce(
           (carry, dotSeperatedSegment) => carry[dotSeperatedSegment],
           this.state.data
@@ -145,5 +145,52 @@ export default class Component {
 
   get el(){
     return new DOMItem(document.querySelector(`[wired\\:id="${this.id}"]`))
+  }
+
+  /* https://github.com/livewire/livewire/blob/main/js/morph.js */
+  /* https://github.com/livewire/livewire/blob/1.x/js/component/index.js#L272 */
+  morphHTML(html){
+    let component = this
+    let rootEl = this.el
+
+    let wrapperTag = rootEl.el.parentElement
+        // If the root element is a "tr", we need the wrapper to be a "table"...
+        ? rootEl.el.parentElement.tagName.toLowerCase()
+        : 'div'
+    let wrapper = document.createElement(wrapperTag) // placeholder for content
+    wrapper.innerHTML = html
+
+    let parentComponent = store.closestComponent(rootEl.el.parentElement)
+    parentComponent && (wrapper.__wired = parentComponent)
+
+    let to = wrapper.firstElementChild
+    to.__wired = component
+
+    Alpine.morph(rootEl.el, to, {
+      updating: (el, toEl, childrenOnly, skip) => {
+        if (typeof el.hasAttribute !== 'function') return
+
+        // Children will update themselves.
+        if (el.hasAttribute('wired:id') && el.getAttribute('wired:id') !== component.id) return skip()
+
+        if (el.hasAttribute('wired:id')){
+          toEl.__wired = component
+          toEl.setAttribute('wired:id', component.id)
+        }
+        // if(Alpine.$data(el)){
+        //   window.Alpine.cloneNode(el, toEl) // should clone x-data
+        // }
+      }
+    })
+  }
+
+  refreshDataBoundElements(){
+    this.walk(el => {
+      if(!el.domNode().directives['model']) return
+
+      if(el.isFocused()) return // typing
+
+      el.setValueFromModel(this)
+    })
   }
 }

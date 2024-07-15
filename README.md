@@ -25,7 +25,7 @@ To initialize variables you can use the mount method inside the component file:
 class FormComponent < Wired::BaseComponent
 
   def mount
-    @fields = {}
+    @fields = {name: '', surname: ''}
     @relations = []
   end
 
@@ -74,7 +74,7 @@ Just be aware that this will run on every update.
 ### 3. Modeling
 In alpine fashion you can bind inputs to component variables. Instead of using `x-model` use `wired:model`:
 ```html
-<!-- app/views/components/_form.html.erb -->
+<!-- app/views/components/form.html.erb -->
 <div>
   <input type="text" wired:model="fields['name']" placeholder="name">
   <input type="text" wired:model="fields.surname" placeholder="surname">
@@ -86,13 +86,13 @@ In alpine fashion you can bind inputs to component variables. Instead of using `
 class FormComponent < Wired::BaseComponent
 
   def mount
-    @fields = {}
+    @fields = {name: '', surname: ''}
   end
 
   # ...
 end
 ```
-Here the component variable `@fields` will be updated live every time the two inputs are typed in.  Note the javascript syntax for the `wired:model` attribute
+Here the component variable `@fields` will be updated live every time the two inputs are typed in.  Note the javascript syntax for the `wired:model` attribute, the keys **need** to be defined at the component level, or the view cannot update correctly.
 
 ### 4. Actions
 At this moment the only supported triggering actions are:
@@ -115,7 +115,7 @@ For any of these you can attach the attribute `wired:action` to an html element 
 # app/components/form_component.rb
 class FormComponent < Wired::BaseComponent
   def mount
-    @fields = {}
+    @fields = {name: '', surname: ''}
   end
 
   def submit
@@ -165,7 +165,7 @@ It is possible to render components inside other components, just call the mount
 <%== Wired::Manager.mount(self, 'Parent') %>
 ```
 ```html
-<!-- app/views/components/_parent.html.erb -->
+<!-- app/views/components/parent.html.erb -->
 <div>
   <h1>I'm the parent</h1>
 
@@ -173,7 +173,7 @@ It is possible to render components inside other components, just call the mount
 </div>
 ```
 ```html
-<!-- app/views/components/_child.html.erb -->
+<!-- app/views/components/child.html.erb -->
 <div>
   <h1>And I'm the child</h1>
 
