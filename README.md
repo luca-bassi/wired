@@ -273,10 +273,6 @@ config.autoload_paths << Rails.root.join('/app/components')
 ```js
 import 'wired'
 ```
-3. source the update component route in `config/routes.rb`:
-```ruby
-mount Wired::Engine, at: '/'
-```
 
 You should remove **all** your Alpinejs imports and dependencies (from `package.json` or your main js files), wired ships with everything by default and it may lead to conflicts.
 
