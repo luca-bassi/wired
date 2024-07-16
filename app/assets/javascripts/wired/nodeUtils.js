@@ -68,6 +68,8 @@ export default {
           delete el.domNode().directives[ename]
         }
         el.addEventListener(ename, el.domNode().directives[ename] = function(e){
+          if(ename == 'submit'){ e.preventDefault(); } /* https://github.com/livewire/livewire/blob/main/js/directives/wire-wildcard.js#L12 */
+
           let action = el.getWiredAttribute(ename);
           const { method, params } = wired.parseOutMethodAndParams(action)
 

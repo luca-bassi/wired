@@ -97,6 +97,7 @@ module Wired
         view_flow
         output_buffer
         virtual_path
+        tag_builder
         __id
         __event_queue
         __redirect_to
