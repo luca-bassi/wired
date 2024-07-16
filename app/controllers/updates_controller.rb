@@ -4,7 +4,7 @@ class UpdatesController < ApplicationController
     state = request.parameters[:state].deep_symbolize_keys
     updates = request.parameters[:updates]
 
-    component = Wired::Manager.fromState(self, state)
+    component = Wired::Manager.fromState(self.view_context, state)
 
     updates.each do |update|
       if update[:type] == 'syncInput'

@@ -16,7 +16,7 @@ module Wired
 
       self.__event_queue = []
 
-      super(context.lookup_context, state, nil)
+      super(context.lookup_context, state, context.controller)
     end
 
     def compiled_method_container
