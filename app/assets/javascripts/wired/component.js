@@ -64,20 +64,28 @@ export default class Component {
         updates: payload,
         state: this.state
       })
-    }).then((r) => r.json())
-    .then((response) => {
-      const state = response.state
-      const thisComponent = store.getComponent(state.refs.id)
-      thisComponent.handleResponse(response)
-
-      // This bit of logic ensures that if actions were queued while a request was
-      // out to the server, they are sent when the request comes back.
-      // (i trust)
-      if (this.actionQueue.length > 0) {
-        this.fireUpdate()
+    }).then((r) => {
+      if(r.ok){
+        r.json().then((response) => {
+          const state = response.state
+          const thisComponent = store.getComponent(state.refs.id)
+          thisComponent.handleResponse(response)
+    
+          // This bit of logic ensures that if actions were queued while a request was
+          // out to the server, they are sent when the request comes back.
+          if (this.actionQueue.length > 0) {
+            this.fireUpdate()
+          }
+        }).catch((err) => {
+          console.log('UPDATE ERROR', err);
+        })
+      }else{
+        // render errors as server errors
+        // TODO this might be wrong
+        r.text().then((response) => {
+          document.documentElement.innerHTML = response
+        })
       }
-    }).catch((err) => {
-      console.log('UPDATE ERROR', err);
     })
   }
 
