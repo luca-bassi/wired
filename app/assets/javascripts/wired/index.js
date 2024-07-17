@@ -126,6 +126,20 @@ window.Alpine = Alpine
 document.addEventListener("DOMContentLoaded", function () {
   window.wired = new Wired
   window.wired.start()
+
+  let pendingEvents = sessionStorage.getItem('wired_event_queue_next')
+  if(pendingEvents){
+    let eventsArray = JSON.parse(pendingEvents)
+    eventsArray.forEach(event => {
+      const e = new CustomEvent(event.event, {
+          bubbles: true,
+          detail: event.data,
+      })
+      console.log('dispatching event', e)
+      window.dispatchEvent(e)
+    })
+    sessionStorage.removeItem('wired_event_queue_next')
+  }
 });
 
 export { Wired, Alpine }

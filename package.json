@@ -1,6 +1,6 @@
 {
   "name": "wired",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "wire rails",
   "main": "app/assets/javascripts/wired/index.js",
   "author": "anon",

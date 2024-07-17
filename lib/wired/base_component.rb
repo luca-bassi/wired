@@ -7,6 +7,7 @@ module Wired
 
     attr_accessor :__id
     attr_accessor :__event_queue
+    attr_accessor :__event_queue_next
     attr_accessor :__redirect_to
 
     def initialize(context, args)
@@ -15,6 +16,7 @@ module Wired
       end
 
       self.__event_queue = []
+      self.__event_queue_next = []
 
       super(context.lookup_context, state, context.controller)
     end
@@ -53,8 +55,16 @@ module Wired
       self.__event_queue << { event: event, data: data }
     end
 
+    def dispatchOnNextPage(event, data=nil)
+      self.__event_queue_next << { event: event, data: data }
+    end
+
     def event_queue
       self.__event_queue
+    end
+
+    def event_queue_next
+      self.__event_queue_next
     end
 
     def updateModel(name, value)
@@ -100,6 +110,7 @@ module Wired
         tag_builder
         __id
         __event_queue
+        __event_queue_next
         __redirect_to
       ]
     end

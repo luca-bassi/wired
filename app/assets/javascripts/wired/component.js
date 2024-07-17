@@ -90,6 +90,15 @@ export default class Component {
     })
 
     if(response.redirectTo){
+      // process dispatch on next page
+      if(response.eventQueueNext.length){
+        let queue = []
+        response.eventQueueNext.forEach(event => {
+          const data = event.data ? event.data : {}
+          queue.push({event: event.event, data: data})
+        })
+        sessionStorage.setItem('wired_event_queue_next', JSON.stringify(queue))
+      }
       window.location.href = response.redirectTo
       return
     }

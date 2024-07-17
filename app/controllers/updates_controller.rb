@@ -26,11 +26,13 @@ class UpdatesController < ApplicationController
     stateData = component.state
     redirectTo = component.redirect_to
     eventQueue = component.event_queue
+    eventQueueNext = component.event_queue_next
 
     render json: {
       html: html,
       redirectTo: redirectTo,
       eventQueue: eventQueue,
+      eventQueueNext: eventQueueNext,
       state: {
         data: stateData,
         refs: state[:refs] # forward references from req

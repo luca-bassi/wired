@@ -157,6 +157,17 @@ window.addEventListener('user-deleted', function(e){
   alert(`deleted user: ${e.detail.user.surname} ${e.detail.user.name}`);
 });
 ```
+Sometimes it might be needed to use both `redirect` and `dispatch` in a single action, for example redirecting to the homepage and then showing an alert.  
+The default `dispatch` wouldn't work in this case cause the page load "cancels" the event trigger, so you'll have to use `dispatchOnNextPage` (with the same syntax)
+```ruby
+def delete
+  # ...
+  @user.destroy
+
+  redirect(users_path)
+  dispatchOnNextPage('user-deleted', {user: user}) # will trigger in users_path
+```
+note that the order of `redirect` and `dispatch` is indifferent in this case.
 
 ### 7. Nesting
 It is possible to render components inside other components, just call the mount function:
