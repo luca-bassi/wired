@@ -135,7 +135,6 @@ document.addEventListener("DOMContentLoaded", function () {
           bubbles: true,
           detail: event.data,
       })
-      console.log('dispatching event', e)
       window.dispatchEvent(e)
     })
     sessionStorage.removeItem('wired_event_queue_next')

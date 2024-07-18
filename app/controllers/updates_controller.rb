@@ -23,7 +23,7 @@ class UpdatesController < ApplicationController
     end
 
     html = component.render_layout
-    stateData = component.state
+    stateData = component.serialized_state
     redirectTo = component.redirect_to
     eventQueue = component.event_queue
     eventQueueNext = component.event_queue_next

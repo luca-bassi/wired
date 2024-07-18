@@ -12,8 +12,10 @@ export default class Component {
     this.isUpdating = false
     // useful attrs
     this.name = this.state.refs.name
-    // wired
-    this.liveState = JSON.parse(JSON.stringify(this.state.data))
+    // reactive
+    this.initialState = nodeUtils.extractData( JSON.parse(JSON.stringify(this.state.data)) )
+    this.liveState = nodeUtils.extractData( JSON.parse(JSON.stringify(this.state.data)) )
+
     this.reactive = Alpine.reactive(this.liveState)
     this.$wired = generateWiredObject(this, this.reactive)
 
@@ -91,8 +93,13 @@ export default class Component {
 
   handleResponse(response){
     this.state = response.state
+
+    // update state
+    this.initialState = nodeUtils.extractData( JSON.parse(JSON.stringify(this.state.data)) )
+    this.liveState = nodeUtils.extractData( JSON.parse(JSON.stringify(this.state.data)) )
+
     // update alpine live state
-    let newData = JSON.parse(JSON.stringify(this.state.data))
+    let newData = nodeUtils.extractData( JSON.parse(JSON.stringify(this.state.data)) )
     Object.entries(this.liveState).forEach(([k, v]) => {
       this.reactive[k] = newData[k]
     })
@@ -125,7 +132,6 @@ export default class Component {
             bubbles: true,
             detail: data,
         })
-        console.log('dispatching event', e)
         this.el.domNode().dispatchEvent(e)
       })
     }
@@ -133,7 +139,7 @@ export default class Component {
     console.log('updated', this)
   }
 
-  walk(callbackDefault, callbackForNewComponent) {
+  walk(callbackDefault, callbackForNewComponent = el => {}) {
     nodeUtils.walk(this.el.domNode(), node => {
         const el = new DOMItem(node)
 
@@ -158,7 +164,7 @@ export default class Component {
     return segments
       .reduce(
           (carry, dotSeperatedSegment) => carry[dotSeperatedSegment],
-          this.state.data
+          this.liveState
       )
   }
 

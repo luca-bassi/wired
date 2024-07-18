@@ -9,9 +9,10 @@ module Wired
       component.mount
 
       html = component.render_layout
+      state = component.serialized_state
 
       initialState = {
-        data: component.state,
+        data: state,
         refs: {
           id: id,
           name: name.underscore,
@@ -23,7 +24,7 @@ module Wired
 
     def self.fromState(context, state)
       name = state[:refs][:name]
-      data = state[:data]
+      data = restore(state[:data])
 
       component = build(context, name, data)
       component.setId(state[:refs][:id])
@@ -43,6 +44,34 @@ module Wired
       raise "component #{name} not found" unless componentClass
 
       return componentClass.new(context, args)
+    end
+
+    def self.restore(payload)
+      state = {}
+      payload.each do |var, data|
+        data = [nil, data[0]] if data.size == 1 # rescue nil value  filtered from request
+
+        value, meta = data
+        # TODO: help
+        obj = case meta[:type]
+          when 'c'
+            meta[:class].constantize.new(value) rescue value
+          when 'i'
+            value.to_i
+          when 'f'
+            value.to_f
+          when 'd'
+            Date.parse(value) rescue Date.new
+          when 'dt'
+            DateTime.parse(value) rescue DateTime.new
+          else
+            value
+        end
+
+        state[var] = obj
+      end
+
+      return state
     end
 
     def self.injectWiredIntoHtml(html, initialState)

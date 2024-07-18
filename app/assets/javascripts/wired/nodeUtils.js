@@ -88,5 +88,23 @@ export default {
       this.walk(node, callback)
       node = node.nextElementSibling
     }
+  },
+
+  /* https://github.com/livewire/livewire/blob/main/js/utils.js#L154 */
+  isSerializedObJ(obj){
+    return Array.isArray(obj) && obj.length === 2 && typeof obj[1] === 'object'
+  },
+
+  extractData(payload){ // [value, metadata]
+    let value = this.isSerializedObJ(payload) ? payload[0] : payload
+    let meta = this.isSerializedObJ(payload) ? payload[1] : undefined
+
+    if (typeof value === 'object' && value !== null) {
+      Object.entries(value).forEach(([key, iValue]) => {
+        value[key] = this.extractData(iValue)
+      })
+    }
+
+    return value
   }
 }

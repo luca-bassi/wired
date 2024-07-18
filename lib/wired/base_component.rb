@@ -1,9 +1,6 @@
 module Wired
   class BaseComponent < ActionView::Base
     # include Rails.application.routes.url_helpers
-    # def default_url_options
-    #   Rails.application.config.action_mailer.default_url_options
-    # end
 
     attr_accessor :__id
     attr_accessor :__event_queue
@@ -37,6 +34,33 @@ module Wired
 
     def state
       instance_values.reject{|k,v| k.in?(reserved_vars) }
+    end
+
+    # TODO: help
+    def serialized_state
+      dump = {}
+      state.each do |var, val|
+        meta = {}
+        case val.class.name
+          when 'Integer'
+            meta[:type] = 'i'
+          when 'Float'
+            meta[:type] = 'f'
+          when 'Date'
+            meta[:type] = 'd'
+          when 'DateTime'
+            meta[:type] = 'dt'
+          when 'NilClass', 'String', 'Hash', 'Array', 'FalseClass', 'TrueClass'
+            meta[:type] = 'base' # these work out of the box
+          else
+            meta[:type] = 'c'
+            meta[:class] = val.class.name
+        end
+
+        dump[var] = [val, meta]
+      end
+
+      return dump
     end
 
     def mount
@@ -87,11 +111,26 @@ module Wired
 
       currentVal = instance_variable_get(:"@#{parts[0]}")
 
-      if currentVal.is_a?(Array)
+      # inputs are submitted as strings most of the time, we need to type cast into what they were originally
+      # TODO: help
+      case currentVal.class.name
+      when 'Array'
         # {array_index => value} -> [values]
         newVal = currentVal.each_with_index.map{|v, i| value[i.to_s] || v }
+      when 'Integer'
+        newVal = value.to_i
+      when 'Float'
+        newVal = value.to_f
+      when 'Date'
+        newVal = Date.parse(value) rescue Date.new
+      when 'DateTime'
+        newVal = DateTime.parse(value) rescue DateTime.new
+      when 'Hash'
+        newVal = currentVal.deep_merge(value.deep_symbolize_keys) rescue value
+      when 'FalseClass', 'TrueClass'
+        newVal = value == 'true'
       else
-        newVal = value.is_a?(Hash) ? currentVal.deep_merge(value.deep_symbolize_keys) : value
+        newVal = value
       end
 
       instance_variable_set(:"@#{parts[0]}", newVal)
