@@ -86,7 +86,13 @@ module Wired
       end
 
       currentVal = instance_variable_get(:"@#{parts[0]}")
-      newVal = value.is_a?(Hash) ? currentVal.deep_merge(value.deep_symbolize_keys) : value
+
+      if currentVal.is_a?(Array)
+        # {array_index => value} -> [values]
+        newVal = currentVal.each_with_index.map{|v, i| value[i.to_s] || v }
+      else
+        newVal = value.is_a?(Hash) ? currentVal.deep_merge(value.deep_symbolize_keys) : value
+      end
 
       instance_variable_set(:"@#{parts[0]}", newVal)
     end

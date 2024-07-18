@@ -131,7 +131,7 @@ function generateEntangleFunction(component, cleanup){
 
 // utils
 
-function dataGet(object, key){
+export function dataGet(object, key){
   if (key === '') return object
 
   return key.split('.').reduce((carry, i) => {
