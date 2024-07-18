@@ -288,6 +288,7 @@ import 'wired'
 You should remove **all** your Alpinejs imports and dependencies (from `package.json` or your main js files), wired ships with everything by default and it may lead to conflicts.
 
 ## TODOS
+* component attrs keep original class (marshal?)
 * ~~view partials without `local_assigns`~~
 * ~~view variables with @~~
 * ~~handle nested components~~
