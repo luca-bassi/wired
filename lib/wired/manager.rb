@@ -55,7 +55,15 @@ module Wired
         # TODO: help
         obj = case meta[:type]
           when 'c'
-            meta[:class].constantize.new(value) rescue value
+            objectClass = meta[:class].constantize
+            if objectClass.superclass.name == 'ApplicationRecord'
+                # try retrieve results by query
+                # 1. array: collection -> where id
+                # 2. hash: id -> find else new by params
+                value.is_a?(Array) ? objectClass.where(id: value.map{|r| r[:id]}) : (value[:id].present? ? objectClass.find(value[:id]) : objectClass.new(value))
+            else
+              objectClass.new(value)
+            end
           when 'i'
             value.to_i
           when 'f'

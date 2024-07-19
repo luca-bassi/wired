@@ -54,7 +54,7 @@ module Wired
             meta[:type] = 'base' # these work out of the box
           else
             meta[:type] = 'c'
-            meta[:class] = val.class.name
+            meta[:class] = val.class.name == 'ActiveRecord::Relation' ? val.klass.name : val.class.name # base name
         end
 
         dump[var] = [val, meta]
