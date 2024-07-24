@@ -94,19 +94,9 @@ module Wired
     def updateModel(name, value)
       parts = name.split('[').map{|k| k.gsub(/['"\]]/, '').split('.')}.flatten
 
-      if parts.size > 1
-        endValue = value
-        value = {}
-
-        parts.each_with_index do |part, i|
-          if i > 0
-            if(parts.size == i+1)
-              value[part] = endValue
-            else
-              value[part] = {}
-            end
-          end
-        end
+      if parts.size > 1 # insert nested key
+        fullvalue = hashify_assign(parts, value) 
+        value = fullvalue[parts[0]] # only inner key (top level == instance var)
       end
 
       currentVal = instance_variable_get(:"@#{parts[0]}")
@@ -137,6 +127,14 @@ module Wired
     end
 
     private
+
+    def hashify_assign(attr_array, value)
+      if attr_array.size == 1
+        return [[attr_array[0], value]].to_h
+      else
+        return [[attr_array[0], hashify_assign(attr_array[1..-1], value)]].to_h
+      end
+    end
 
     def reserved_vars
       %w[
