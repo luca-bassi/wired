@@ -303,3 +303,7 @@ You should remove **all** your Alpinejs imports and dependencies (from `package.
 * parent-children communication
 
 and all the `TODO` you find in the source
+
+## KNOWN ISSUES
+- Doesn't work too well when combining `wired:model` and `x-model`, for now use one or the other (or the `$wired` magic)
+- Some classes/types *might* not work when instantiated as instance variables (in particular custom classes which have the `new` method with specific params)
