@@ -169,7 +169,28 @@ def delete
 ```
 note that the order of `redirect` and `dispatch` is indifferent in this case.
 
-### 7. Nesting
+### 7. Polling
+Sometimes you might want your component to refresh its data or call a function periodically.  
+To do this use the `wired:poll` directive:
+```html
+<!-- app/views/components/poll_component.rb -->
+<div>
+  <div wired:poll>
+    <!-- content to update periodically -->
+  </div>
+
+  <div wired:poll.5s="updateData()">
+    <!-- content -->
+  </div>
+</div>
+```
+1. without modifiers or values `wired:poll` refreshes the content every 2 seconds
+2. use the modifiers to change the time of the interval (eg. '1s', '500ms', ..)
+3. use the attribute value to pick what function to run instead of the refresh
+
+Note that this directive runs an ajax call every N seconds/millis so be mindful when using it :)
+
+### 8. Nesting
 It is possible to render components inside other components, just call the mount function:
 ```html
 <!-- your_view.html.erb -->
@@ -195,7 +216,7 @@ A few notes:
 1. Only use this if the child **needs** wired functionalities, most times a normal rails partial will be sufficient
 2. Currently there is no parent-children communication, they live independently to one another
 
-### 8. Alpine / $wired
+### 9. Alpine / $wired
 Wired, much like livewire, ships with alpinejs and all its plugins already enabled and it's designed to work seamlessly with it.
 
 This means that you can effectively use alpine's functionalities to trigger and interact with the backend component, using the magic `$wired`. A simple example would be the following:

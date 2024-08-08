@@ -26,55 +26,91 @@ export default {
   },
 
   init(el, component){
-    const acceptedEvents = ['click', 'input', 'change', 'submit']
+    el.getDirectives().forEach((d) => {
+      // d = { name: 'model', modifier: '', expression: 'modelVar'}
+      // d = { name: 'poll', modifier: '1s', expression: 'funcToCall()'}
+      const directiveName = d.name
+      const modifier = d.modifier
+      const expression = d.expression
+      switch(directiveName){
+        case 'model':
+          // no file uploads
+          if (
+            el.domNode().tagName.toLowerCase() === 'input' &&
+            el.domNode().type === 'file'
+          )
+            break;
 
-    // model behavior
-    if(el.hasWiredAttribute('model')){
-      // no file uploads
-      if (
-        el.domNode().tagName.toLowerCase() === 'input' &&
-        el.domNode().type === 'file'
-      )
-        return
+          // set initial value
+          el.setValueFromModel(component)
+          // add event listener
+          const event =
+            el.domNode().tagName.toLowerCase() === 'select' ||
+            ['checkbox', 'radio'].includes(el.domNode().type)
+              ? 'change'
+              : 'input'
 
-      // set initial value
-      el.setValueFromModel(component)
-      // add event listener
-      const event =
-        el.domNode().tagName.toLowerCase() === 'select' ||
-        ['checkbox', 'radio'].includes(el.domNode().type)
-          ? 'change'
-          : 'input'
+          // remove previous instance
+          if(el.domNode().directives[directiveName]){
+            el.removeEventListener(event, el.domNode().directives[directiveName])
+            delete el.domNode().directives[directiveName]
+          }
+          el.addEventListener(event, el.domNode().directives[directiveName] = function(e){
+            const model = expression
+            const value = el.inputValue(component)
 
-      // remove previous instance
-      if(el.domNode().directives['model']){
-        el.removeEventListener(event, el.domNode().directives['model'])
-        delete el.domNode().directives['model']
-      }
-      el.addEventListener(event, el.domNode().directives['model'] = function(e){
-        const model = el.getWiredAttribute('model')
-        const value = el.inputValue(component)
+            component.requestUpdate({type: 'syncInput', data: {model, value}});
+          })
 
-        component.requestUpdate({type: 'syncInput', data: {model, value}});
-      })
-    }
+          break;
+        case 'poll':
+          // get time from modifier || 2sec
+          let time = 2000 // ms
+          let timeInMs = modifier && modifier.match(/([0-9]+)ms/)
+          let timeInS = modifier && modifier.match(/([0-9]+)s/)
+          if(timeInMs){
+            time = Number(modifier.replace('ms', ''))
+          }else if(timeInS){
+            time = Number(modifier.replace('s', '')) * 1000
+          }
 
-    // check generic events
-    acceptedEvents.forEach(function(ename){
-      if(el.hasWiredAttribute(ename)){
-        // remove previous instance
-        if(el.domNode().directives[ename]){
-          el.removeEventListener(ename, el.domNode().directives[ename])
-          delete el.domNode().directives[ename]
-        }
-        el.addEventListener(ename, el.domNode().directives[ename] = function(e){
-          if(ename == 'submit'){ e.preventDefault(); } /* https://github.com/livewire/livewire/blob/main/js/directives/wire-wildcard.js#L12 */
+          let element = el.domNode()
+          // stop and remove previous instance
+          if(element.clocks[time]){
+            clearInterval(element.clocks[time])
+            delete element.clocks[time]
+          }
 
-          let action = el.getWiredAttribute(ename);
-          const { method, params } = wired.parseOutMethodAndParams(action)
+          let clock = setInterval(() => {
+            if(!element.isConnected){ clearInterval(clock) }
 
-          component.requestUpdate({type: 'callMethod', data: {method, params}});
-        });
+            Alpine.evaluate(element,
+              expression ? '$wired.' + expression : '$wired.refresh()'
+            )
+          }, time)
+
+          element.clocks[time] = clock
+
+          break;
+        case 'click':
+        case 'input':
+        case 'change':
+        case 'submit':
+          // remove previous instance
+          if(el.domNode().directives[directiveName]){
+            el.removeEventListener(directiveName, el.domNode().directives[directiveName])
+            delete el.domNode().directives[directiveName]
+          }
+          el.addEventListener(directiveName, el.domNode().directives[directiveName] = function(e){
+            if(directiveName == 'submit'){ e.preventDefault(); } /* https://github.com/livewire/livewire/blob/main/js/directives/wire-wildcard.js#L12 */
+
+            let action = expression;
+            const { method, params } = wired.parseOutMethodAndParams(action)
+
+            component.requestUpdate({type: 'callMethod', data: {method, params}});
+          });
+
+          break;
       }
     })
   },

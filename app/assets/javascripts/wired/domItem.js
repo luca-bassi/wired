@@ -46,6 +46,18 @@ export default class DOMItem {
     return this.el.removeEventListener(...arguments)
   }
 
+  getDirectives(){
+    return Array.from(this.el.getAttributeNames()
+            // Filter only the wired directives.
+            .filter(name => name.match(/^wired:/))
+            // Parse out the type, modifiers, and value from it.
+            .map(name => {
+              let [value, modifier] = name.replace(/^wired:/, '').split('.')
+              let expression = this.el.getAttribute(name)
+              return {name: value, modifier: modifier, expression: expression}
+            }))
+  }
+
   /* preso paro paro da lw1 */
   inputValue(component){
     if (this.el.type === 'checkbox') {

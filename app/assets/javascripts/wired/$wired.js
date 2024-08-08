@@ -75,6 +75,9 @@ setWiredMethod('set', (component) => async (property, value, live = true) => {
 
   return Promise.resolve()
 })
+setWiredMethod('refresh', (component) => () => {
+  component.requestUpdate({type: 'refresh', data: {}});
+})
 
 // main entangle
 function generateEntangleFunction(component, cleanup){
