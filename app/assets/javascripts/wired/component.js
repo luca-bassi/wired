@@ -195,6 +195,8 @@ export default class Component {
       updating: (el, toEl, childrenOnly, skip) => {
         if (typeof el.hasAttribute !== 'function') return
 
+        if (el.__wired_ignore === true) return skip()
+
         // Children will update themselves.
         if (el.hasAttribute('wired:id') && el.getAttribute('wired:id') !== component.id) return skip()
 

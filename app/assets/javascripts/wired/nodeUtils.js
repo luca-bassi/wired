@@ -92,6 +92,9 @@ export default {
           element.clocks[time] = clock
 
           break;
+        case 'ignore':
+          el.domNode().__wired_ignore = true
+          break
         case 'click':
         case 'input':
         case 'change':

@@ -277,7 +277,18 @@ But what if i want alpine variables and functions to reflect into the backend st
   </div>
 </div>
 ```
-The behavior of this snippet is exactly the same as the previous, with the exception that the component state is directly updated by alpine, not by calling backend functions.  
+The behavior of this snippet is exactly the same as the previous, with the exception that the component state is directly updated by alpine, not by calling backend functions.
+
+### 10. Ignore
+Sometimes you'll want an element on the page to not re-render or update (or change in general) as a consequence of wired. To do this mark the element with the attribute `wired:ignore`
+```html
+<!-- some_component.html.erb -->
+...
+<div wired:ignore>
+  I wont change!
+</div>
+...
+```
 
 ## Installation
 Add this line to your application's Gemfile:
