@@ -290,6 +290,18 @@ Sometimes you'll want an element on the page to not re-render or update (or chan
 ...
 ```
 
+## Things to note
+- All the instance variables need to be serialized to perform updates. Currently the only classes for which serialization is supported are:
+  | | |
+  |-|-|
+  | Primitive types | `Integer` `Float` `NilClass` `FalseClass` `TrueClass` `Hash` `Array` `String` |
+  | Date types | `Date` `DateTime`|
+  | ActiveRecords | `ActiveRecord::Base` `ActiveRecord::Relation` |
+If you try to use instance variables that are NOT included you will get an _"Invalid property class"_ error
+- Using date/time input types with a `wired:model` initialized as  `nil` or `""` cannot produce a date/time, but a `String` at most.  
+If you want to use date/time types for your variable please initialize it as such so that wired can handle the type casting.  
+The same is generally true for all types, wired cannot infer the type of a variable based on the input type that it's modeled with.
+
 ## Installation
 Add this line to your application's Gemfile:
 
@@ -338,4 +350,3 @@ and all the `TODO` you find in the source
 
 ## KNOWN ISSUES
 - Doesn't work too well when combining `wired:model` and `x-model`, for now use one or the other (or the `$wired` magic)
-- Some classes/types *might* not work when instantiated as instance variables (in particular custom classes which have the `new` method with specific params)

@@ -56,24 +56,22 @@ module Wired
         obj = case meta[:type]
           when 'c'
             objectClass = meta[:class].constantize
-            if objectClass.superclass.name == 'ApplicationRecord'
-                # try retrieve results by query
-                # 1. array: collection -> where id
-                # 2. hash: id -> find else new by params
-                value.is_a?(Array) ? objectClass.where(id: value.map{|r| r[:id]}) : (value[:id].present? ? objectClass.find(value[:id]) : objectClass.new(value))
-            else
-              objectClass.new(value)
-            end
+            raise StandardError.new("Invalid property class: #{meta[:class]}") unless objectClass.superclass.name == 'ApplicationRecord'
+
+            # try retrieve results by query
+            # 1. array: collection -> where id
+            # 2. hash: id -> find else new by params
+            value.is_a?(Array) ? objectClass.where(id: value.map{|r| r[:id]}) : (value[:id].present? ? objectClass.find(value[:id]) : objectClass.new(value))
           when 'i'
             value.to_i
           when 'f'
             value.to_f
           when 'd'
-            Date.parse(value) rescue Date.new
+            Date.parse(value)# rescue Date.new
           when 'dt'
-            DateTime.parse(value) rescue DateTime.new
+            DateTime.parse(value)# rescue DateTime.new
           else
-            value
+            value # no need to cast
         end
 
         state[var] = obj

@@ -53,7 +53,9 @@ module Wired
           when 'NilClass', 'String', 'Hash', 'Array', 'FalseClass', 'TrueClass'
             meta[:type] = 'base' # these work out of the box
           else
-            meta[:type] = 'c'
+            # class (only ActiveRecord supported)
+            raise StandardError.new("Invalid property class: #{val.class.name}") unless val.is_a?(ActiveRecord::Base) || val.is_a?(ActiveRecord::Relation)
+            meta[:type] = 'c' 
             meta[:class] = val.class.name == 'ActiveRecord::Relation' ? val.klass.name : val.class.name # base name
         end
 
@@ -112,15 +114,15 @@ module Wired
       when 'Float'
         newVal = value.to_f
       when 'Date'
-        newVal = Date.parse(value) rescue Date.new
+        newVal = Date.parse(value)# rescue Date.new
       when 'DateTime'
-        newVal = DateTime.parse(value) rescue DateTime.new
+        newVal = DateTime.parse(value)# rescue DateTime.new
       when 'Hash'
         newVal = currentVal.deep_merge(value.deep_symbolize_keys) rescue value
       when 'FalseClass', 'TrueClass'
         newVal = value == 'true'
       else
-        newVal = value
+        newVal = value # no need to cast
       end
 
       instance_variable_set(:"@#{parts[0]}", newVal)
