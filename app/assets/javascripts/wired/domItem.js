@@ -4,6 +4,7 @@ export default class DOMItem {
   constructor(el){
     this.el = el
     this.el.directives ||= {} // name: func
+    this.el.clocks ||= {} // time: interval
   }
 
   domNode(){
@@ -56,6 +57,28 @@ export default class DOMItem {
               let expression = this.el.getAttribute(name)
               return {name: value, modifier: modifier, expression: expression}
             }))
+  }
+
+  registerUploader(expression, component){
+    if(this.el.tagName.toLowerCase() != 'input' && this.el.type != 'file') return
+
+    // remove previous instance
+    if(this.el.directives['upload']){
+      this.el.removeEventListener('change', this.el.directives['upload'])
+      delete this.el.directives['upload']
+    }
+    this.el.addEventListener('change', this.el.directives['upload'] = function(e){
+      if (e.target.files.length === 0) return
+
+      // start()
+      console.log('started upload')
+
+      if (e.target.multiple) {
+        component.uploadMultiple(expression, e.target.files)
+      } else {
+        component.upload(expression, e.target.files[0])
+      }
+    })
   }
 
   /* preso paro paro da lw1 */

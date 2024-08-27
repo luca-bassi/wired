@@ -3,6 +3,8 @@ import nodeUtils from './nodeUtils';
 import DOMItem from './domItem';
 import { generateWiredObject } from './$wired';
 
+import { DirectUpload } from '@rails/activestorage'
+
 export default class Component {
   constructor(el){
     el.domNode().__wired = this
@@ -12,6 +14,7 @@ export default class Component {
     this.isUpdating = false
     // useful attrs
     this.name = this.state.refs.name
+    this.uploads = {}
     // reactive
     this.initialState = nodeUtils.extractData( JSON.parse(JSON.stringify(this.state.data)) )
     this.liveState = nodeUtils.extractData( JSON.parse(JSON.stringify(this.state.data)) )
@@ -35,6 +38,53 @@ export default class Component {
       el => { nodeUtils.init(el, this) },
       el => { store.addComponent(new Component(el)) }
     )
+  }
+
+  upload(name, file) {
+    this.startUpload({
+      name: name,
+      files: [file],
+      multiple: false
+    })
+  }
+
+  uploadMultiple(name, files) {
+    this.startUpload({
+      name: name,
+      files: Array.from(files),
+      multiple: true
+    })
+  }
+
+  startUpload(uploadObj){
+    const name = uploadObj.name;
+    const isMultiple = uploadObj.multiple;
+    uploadObj.files.forEach((file) => {
+      const upload = new DirectUpload(
+        file,
+        '/rails/active_storage/direct_uploads', // This url is exposed by default in your app
+      );
+      upload.create((error, blob) => {
+        if(error){
+          console.log("ERROR UPLOADING FILE:", error)
+        }else{
+          this.setUploaded(name, blob)
+
+          if(this.uploads[name].length == uploadObj.files.length){
+            this.requestUpdate({
+              type: 'callMethod',
+              data: { method: 'setUpload', params: [name, this.uploads[name], isMultiple] }
+            })
+          }
+        }
+      });
+    });
+  }
+
+  setUploaded(name, blob){
+    // add to bag
+    if(!this.uploads[name]) this.uploads[name] = []
+    this.uploads[name].push(blob)
   }
 
   requestUpdate(action){

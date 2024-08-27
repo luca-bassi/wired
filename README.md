@@ -297,10 +297,15 @@ Sometimes you'll want an element on the page to not re-render or update (or chan
   | Primitive types | `Integer` `Float` `NilClass` `FalseClass` `TrueClass` `Hash` `Array` `String` |
   | Date types | `Date` `DateTime`|
   | ActiveRecords | `ActiveRecord::Base` `ActiveRecord::Relation` |
-If you try to use instance variables that are NOT included you will get an _"Invalid property class"_ error
-- Using date/time input types with a `wired:model` initialized as  `nil` or `""` cannot produce a date/time, but a `String` at most.  
-If you want to use date/time types for your variable please initialize it as such so that wired can handle the type casting.  
+
+  If you try to use instance variables that are NOT included you will get an _"Invalid property class"_ error
+
+- Using date/time input types with a `wired:model` initialized as  `nil` or `""` cannot produce a date/time, but a `String` at most. If you want to use date/time types for your variable please initialize it as such so that wired can handle the type casting.  
 The same is generally true for all types, wired cannot infer the type of a variable based on the input type that it's modeled with.
+
+- To be able to use `wired:model` on file uploads you need to have `ActiveStorage` installed:
+  >`rails active_storage:install`  
+  >`rails db:migrate`
 
 ## Installation
 Add this line to your application's Gemfile:

@@ -38,8 +38,10 @@ export default {
           if (
             el.domNode().tagName.toLowerCase() === 'input' &&
             el.domNode().type === 'file'
-          )
+          ){
+            el.registerUploader(expression, component)
             break;
+          }
 
           // set initial value
           el.setValueFromModel(component)

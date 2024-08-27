@@ -1,6 +1,6 @@
 {
   "name": "wired",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "description": "wire rails",
   "main": "app/assets/javascripts/wired/index.js",
   "author": "anon",
@@ -14,6 +14,7 @@
     "@alpinejs/mask": "^3.13.10",
     "@alpinejs/morph": "^3.13.10",
     "@alpinejs/persist": "^3.13.10",
+    "@rails/activestorage": "^7.2.100",
     "alpinejs": "^3.13.10"
   }
 }

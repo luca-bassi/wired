@@ -46,36 +46,47 @@ module Wired
       return componentClass.new(context, args)
     end
 
+    # PACKS VARIABLES INTO JSON
+    def self.serialize(value)
+      return [value, { type: 'i' }] if value.is_a? Integer
+      return [value, { type: 'f' }] if value.is_a? Float
+      return [value, { type: 'd' }] if value.is_a? Date
+      return [value, { type: 'dt' }] if value.is_a? DateTime
+      return value if [NilClass, String, FalseClass, TrueClass].any?{|c| value.is_a? c}
+      return [value.map{|e| serialize(e)}, { type: 'a' }] if value.is_a? Array
+      return [value.map{|k,v| [k, serialize(v)]}.to_h, { type: 'h' }] if value.is_a? Hash
+
+      raise StandardError.new("Invalid property class: #{value.class.name}") unless value.is_a?(ActiveRecord::Base) || value.is_a?(ActiveRecord::Relation)
+      return [value, { type: 'm', class: (value.class.name == 'ActiveRecord::Relation' ? value.klass.name : value.class.name) }]
+    end
+
+    # UNPACKS JSON INTO VARIABLES
+    def self.deserialize(data)
+      value, meta = data
+
+      return value if meta.nil?
+      return value.to_i if meta[:type] == 'i'
+      return value.to_f if meta[:type] == 'f'
+      return Date.parse(value) if meta[:type] == 'd'
+      return DateTime.parse(value) if meta[:type] == 'dt'
+      return value.map{|e| deserialize(e)} if meta[:type] == 'a'
+      return value.map{|k,v| [k, deserialize(v)]}.to_h if meta[:type] == 'h'
+
+      modelClass = meta[:class].constantize
+
+      raise StandardError.new("Invalid property class: #{meta[:class]}") unless modelClass.superclass.name.in? ['ApplicationRecord', 'ActiveStorage::Record']
+
+      # model -> try retrieve results by query
+      # 1. array: collection -> where id
+      # 2. hash: id ? find : new by params
+      modelValue = value.is_a?(Array) ? modelClass.where(id: value.map{|r| r[:id]}) : (value[:id].present? ? modelClass.find(value[:id]) : modelClass.new(value))
+      return modelValue
+    end
+
     def self.restore(payload)
       state = {}
-      payload.each do |var, data|
-        data = [nil, data[0]] if data.size == 1 # rescue nil value  filtered from request
 
-        value, meta = data
-        # TODO: help
-        obj = case meta[:type]
-          when 'c'
-            objectClass = meta[:class].constantize
-            raise StandardError.new("Invalid property class: #{meta[:class]}") unless objectClass.superclass.name == 'ApplicationRecord'
-
-            # try retrieve results by query
-            # 1. array: collection -> where id
-            # 2. hash: id -> find else new by params
-            value.is_a?(Array) ? objectClass.where(id: value.map{|r| r[:id]}) : (value[:id].present? ? objectClass.find(value[:id]) : objectClass.new(value))
-          when 'i'
-            value.to_i
-          when 'f'
-            value.to_f
-          when 'd'
-            Date.parse(value)# rescue Date.new
-          when 'dt'
-            DateTime.parse(value)# rescue DateTime.new
-          else
-            value # no need to cast
-        end
-
-        state[var] = obj
-      end
+      payload.each{ |key, data| state[key] = deserialize(data) }
 
       return state
     end

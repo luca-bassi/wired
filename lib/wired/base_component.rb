@@ -1,7 +1,5 @@
 module Wired
   class BaseComponent < ActionView::Base
-    # include Rails.application.routes.url_helpers
-
     attr_accessor :__id
     attr_accessor :__event_queue
     attr_accessor :__event_queue_next
@@ -36,31 +34,11 @@ module Wired
       instance_values.reject{|k,v| k.in?(reserved_vars) }
     end
 
-    # TODO: help
+    ## DESERIALIZABLE JSON FORMAT FOR STATE ##
     def serialized_state
       dump = {}
-      state.each do |var, val|
-        meta = {}
-        case val.class.name
-          when 'Integer'
-            meta[:type] = 'i'
-          when 'Float'
-            meta[:type] = 'f'
-          when 'Date'
-            meta[:type] = 'd'
-          when 'DateTime'
-            meta[:type] = 'dt'
-          when 'NilClass', 'String', 'Hash', 'Array', 'FalseClass', 'TrueClass'
-            meta[:type] = 'base' # these work out of the box
-          else
-            # class (only ActiveRecord supported)
-            raise StandardError.new("Invalid property class: #{val.class.name}") unless val.is_a?(ActiveRecord::Base) || val.is_a?(ActiveRecord::Relation)
-            meta[:type] = 'c' 
-            meta[:class] = val.class.name == 'ActiveRecord::Relation' ? val.klass.name : val.class.name # base name
-        end
 
-        dump[var] = [val, meta]
-      end
+      state.each{ |var, val| dump[var] = Wired::Manager.serialize(val) }
 
       return dump
     end
@@ -93,6 +71,7 @@ module Wired
       self.__event_queue_next
     end
 
+    ## SETS ACTUAL INSTANCE VARIABLE ##
     def updateModel(name, value)
       parts = name.split('[').map{|k| k.gsub(/['"\]]/, '').split('.')}.flatten
 
@@ -126,6 +105,12 @@ module Wired
       end
 
       instance_variable_set(:"@#{parts[0]}", newVal)
+    end
+
+    def setUpload(name, files, multiple)
+      blobs = multiple ? ActiveStorage::Blob.where(key: files.map{|f| f['key']}) : ActiveStorage::Blob.find_by(key: files.first['key'])
+
+      updateModel(name, blobs)
     end
 
     private
