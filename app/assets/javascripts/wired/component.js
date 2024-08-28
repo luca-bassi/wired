@@ -50,7 +50,7 @@ export default class Component {
           const data = event.data ? event.data : {}
           queue.push({event: event.event, data: data})
         })
-        sessionStorage.setItem('event_queue_next', JSON.stringify(queue))
+        sessionStorage.setItem('wired_event_queue_next', JSON.stringify(queue))
       }
       window.location.href = effects.redirectTo
     }
