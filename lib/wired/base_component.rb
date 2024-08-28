@@ -94,7 +94,7 @@ module Wired
         newVal = value.to_f
       when 'Date'
         newVal = Date.parse(value)# rescue Date.new
-      when 'DateTime'
+      when 'DateTime', 'ActiveSupport::TimeWithZone'
         newVal = DateTime.parse(value)# rescue DateTime.new
       when 'Hash'
         newVal = currentVal.deep_merge(value.deep_symbolize_keys) rescue value
@@ -111,6 +111,17 @@ module Wired
       blobs = multiple ? ActiveStorage::Blob.where(key: files.map{|f| f['key']}) : ActiveStorage::Blob.find_by(key: files.first['key'])
 
       updateModel(name, blobs)
+    end
+
+    def prepare_response
+      stateData = serialized_state
+      redirectTo = redirect_to
+      eventQueue = event_queue
+      eventQueueNext = event_queue_next
+
+      html = redirectTo ? '<div></div>' : render_layout # dont render template if redirect
+
+      return [stateData, redirectTo, eventQueue, eventQueueNext, html]
     end
 
     private

@@ -22,6 +22,8 @@ export default class Component {
     this.reactive = Alpine.reactive(this.liveState)
     this.$wired = generateWiredObject(this, this.reactive)
 
+    this.processEffects(JSON.parse(this.extractEffects())) // redirect/events
+
     this.init()
 
     console.log(this)
@@ -31,6 +33,39 @@ export default class Component {
     const value = this.el.getWiredAttribute('initial')
     this.el.removeWiredAttribute('initial')
     return value
+  }
+
+  extractEffects(){
+    const value = this.el.getWiredAttribute('effects')
+    this.el.removeWiredAttribute('effects')
+    return value
+  }
+
+  processEffects(effects){
+    if(effects.redirectTo){
+      // process dispatch on next page
+      if(effects.eventQueueNext.length){
+        let queue = []
+        effects.eventQueueNext.forEach(event => {
+          const data = event.data ? event.data : {}
+          queue.push({event: event.event, data: data})
+        })
+        sessionStorage.setItem('event_queue_next', JSON.stringify(queue))
+      }
+      window.location.href = effects.redirectTo
+    }
+
+    /* https://github.com/livewire/livewire/blob/1.x/js/component/index.js#L188 */
+    if(effects.eventQueue.length){
+      effects.eventQueue.forEach(event => {
+        const data = event.data ? event.data : {}
+        const e = new CustomEvent(event.event, {
+            bubbles: true,
+            detail: data,
+        })
+        this.el.domNode().dispatchEvent(e)
+      })
+    }
   }
 
   init() {
@@ -154,19 +189,21 @@ export default class Component {
       this.reactive[k] = newData[k]
     })
 
-    if(response.redirectTo){
-      // process dispatch on next page
-      if(response.eventQueueNext.length){
-        let queue = []
-        response.eventQueueNext.forEach(event => {
-          const data = event.data ? event.data : {}
-          queue.push({event: event.event, data: data})
-        })
-        sessionStorage.setItem('wired_event_queue_next', JSON.stringify(queue))
-      }
-      window.location.href = response.redirectTo
-      return
-    }
+    this.processEffects(response)
+
+    // if(response.redirectTo){
+    //   // process dispatch on next page
+    //   if(response.eventQueueNext.length){
+    //     let queue = []
+    //     response.eventQueueNext.forEach(event => {
+    //       const data = event.data ? event.data : {}
+    //       queue.push({event: event.event, data: data})
+    //     })
+    //     sessionStorage.setItem('wired_event_queue_next', JSON.stringify(queue))
+    //   }
+    //   window.location.href = response.redirectTo
+    //   return
+    // }
 
     this.morphHTML(response.html)
 
@@ -174,17 +211,17 @@ export default class Component {
 
     this.isUpdating = false
 
-    /* https://github.com/livewire/livewire/blob/1.x/js/component/index.js#L188 */
-    if(response.eventQueue.length){
-      response.eventQueue.forEach(event => {
-        const data = event.data ? event.data : {}
-        const e = new CustomEvent(event.event, {
-            bubbles: true,
-            detail: data,
-        })
-        this.el.domNode().dispatchEvent(e)
-      })
-    }
+    // /* https://github.com/livewire/livewire/blob/1.x/js/component/index.js#L188 */
+    // if(response.eventQueue.length){
+    //   response.eventQueue.forEach(event => {
+    //     const data = event.data ? event.data : {}
+    //     const e = new CustomEvent(event.event, {
+    //         bubbles: true,
+    //         detail: data,
+    //     })
+    //     this.el.domNode().dispatchEvent(e)
+    //   })
+    // }
 
     console.log('updated', this)
   }

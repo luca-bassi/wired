@@ -8,18 +8,27 @@ module Wired
 
       component.mount
 
-      html = component.render_layout
-      state = component.serialized_state
+      # html = component.render_layout
+      # state = component.serialized_state
 
-      initialState = {
-        data: state,
-        refs: {
-          id: id,
-          name: name.underscore,
+      stateData, redirectTo, eventQueue, eventQueueNext, html = component.prepare_response
+
+      initialData = {
+        effects: {
+          redirectTo: redirectTo,
+          eventQueue: eventQueue,
+          eventQueueNext: eventQueueNext
         },
+        state: {
+          data: stateData,
+          refs: {
+            id: id,
+            name: name.underscore,
+          }
+        }
       }
 
-      injectWiredIntoHtml(html, initialState)
+      injectWiredIntoHtml(html, initialData)
     end
 
     def self.fromState(context, state)
@@ -51,7 +60,7 @@ module Wired
       return [value, { type: 'i' }] if value.is_a? Integer
       return [value, { type: 'f' }] if value.is_a? Float
       return [value, { type: 'd' }] if value.is_a? Date
-      return [value, { type: 'dt' }] if value.is_a? DateTime
+      return [value, { type: 'dt' }] if value.is_a?(DateTime) || value.is_a?(ActiveSupport::TimeWithZone)
       return value if [NilClass, String, FalseClass, TrueClass].any?{|c| value.is_a? c}
       return [value.map{|e| serialize(e)}, { type: 'a' }] if value.is_a? Array
       return [value.map{|k,v| [k, serialize(v)]}.to_h, { type: 'h' }] if value.is_a? Hash
@@ -91,13 +100,15 @@ module Wired
       return state
     end
 
-    def self.injectWiredIntoHtml(html, initialState)
+    def self.injectWiredIntoHtml(html, initialData)
       match = html.match(/<([a-zA-Z]*)/)
       raise 'No root tag for component' unless match
 
       rootTag = match[0]
+      initialState = initialData[:state]
+      effects = initialData[:effects]
 
-      @html = html.sub(rootTag, "#{rootTag} wired:id='#{initialState[:refs][:id]}' wired:initial='#{initialState.to_json}'")
+      @html = html.sub(rootTag, "#{rootTag} wired:id='#{initialState[:refs][:id]}' wired:initial='#{initialState.to_json}' wired:effects='#{effects.to_json}'")
     end
   end
 end

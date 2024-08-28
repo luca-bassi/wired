@@ -22,11 +22,7 @@ class UpdatesController < ApplicationController
       end
     end
 
-    html = component.render_layout
-    stateData = component.serialized_state
-    redirectTo = component.redirect_to
-    eventQueue = component.event_queue
-    eventQueueNext = component.event_queue_next
+    stateData, redirectTo, eventQueue, eventQueueNext, html = component.prepare_response
 
     render json: {
       html: html,
