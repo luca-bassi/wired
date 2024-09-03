@@ -311,7 +311,7 @@ The same is generally true for all types, wired cannot infer the type of a varia
 Add this line to your application's Gemfile:
 
 ```ruby
-gem "wired", git: "https://github.com/rukadesu1/wired.git"
+gem "wired", git: "https://github.com/luca-bassirukadesu1/wired.git"
 ```
 
 And then execute:
