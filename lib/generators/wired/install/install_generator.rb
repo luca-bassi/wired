@@ -3,7 +3,7 @@ module Wired
 
     def init
       puts("Installing JS package")
-      run("yarn add https://github.com/luca-bassi/wired")
+      run("yarn add https://github.com/rukadesu1/wired")
 
       puts('Creating required folders')
       Dir.mkdir('app/components') unless Dir.exist?('app/components')
